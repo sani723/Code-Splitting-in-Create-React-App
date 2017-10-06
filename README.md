@@ -37,7 +37,7 @@ However, here we are importing all of the components in the route statically at 
 
 To implement Code Splitting here we are going to use an excellent higher order component that does a lot of this well, it’s called [`react-loadable`](https://github.com/thejameskyle/react-loadable).
 
-first install it
+## Installation
 
 ```js
 yarn add react-loadable
@@ -96,6 +96,42 @@ Loadable.Map({
     return <Component {...props} data={data}/>;
   }
 });
+```
+
+## Avoid Repetition
+
+Specifying the same loading component or delay every time you use Loadable() gets repetitive fast. Instead you can wrap Loadable with your own Higher-Order Component (HOC) to set default options.
+
+```js
+import Loadable from 'react-loadable';
+import Loading from './Loading';
+
+const AsyncLoader = opts => {
+  return Loadable(Object.assign({
+    loading: Loading
+  }, opts));
+};
+
+export default AsyncLoader;
+```
+
+Then you can just specify a loader when you go to use it.
+
+```js
+import React, { Component } from 'react';
+import AsyncLoader from './components/ui/AsyncLoader';
+
+const AsyncTimer = AsyncLoader({
+  loader: () => import('./components/container/Timer'),
+});
+
+class App extends React.Component {
+  render() {
+    return <AsyncTimer />;
+  }
+}
+
+export default App;
 ```
 
 Make sure to check out the other options and features that `react-loadable` has.

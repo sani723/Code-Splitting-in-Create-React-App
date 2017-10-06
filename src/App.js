@@ -1,15 +1,13 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import Loadable from 'react-loadable';
-import Loading from './components/ui/Loading';
+import AsyncLoader from './components/ui/AsyncLoader';
 
 class App extends Component {
   render() {
 
-    const AsyncTimer = Loadable({
+    const AsyncTimer = AsyncLoader({
       loader: () => import('./components/container/Timer'),
-      loading: Loading
     });
 
     return (
@@ -23,7 +21,7 @@ class App extends Component {
         </p>
 
         <AsyncTimer />
-        
+
       </div>
     );
   }
