@@ -1,4 +1,4 @@
-# Code Splitting in React App
+# Code Splitting in Create React App
 
 Code Splitting is not a necessary step for building React apps. But it can really help in larger React apps.
 
@@ -13,3 +13,89 @@ This feature is called Code Splitting.
 > To keep the initial JavaScript payload of app down to the minimum, and load the rest of the code on demand.
 
 Create React App allows us to `dynamically import` parts of our app using the import() proposal. You can read more about it here. And they really encourage you to use import() to delay loading the code for non-critical component subtrees until you need to render them.
+
+![alt Splitting Code](https://user-images.githubusercontent.com/6458802/31270576-f1e63c9e-aa95-11e7-93d3-688aad593e8d.gif)
+
+While, `the dynamic import()` can be used for any component in our React app, it works really well with React Router. Since, React Router is figuring out which component to load based on the path. It would make sense that we dynamically import those components only when we navigate to them.
+
+The usual structure used by React Router to set up routing for app looks something like this.
+
+```js
+import Home from "./components/containers/Home";
+import Posts from "./components/containers/Posts";
+import NotFound from "./components/containers/NotFound";
+
+export default () =>
+  <Switch>
+    <Route path="/" exact component={Home} />
+    <Route path="/posts/:id" exact component={Posts} />
+    <Route component={NotFound} />
+  </Switch>;
+```
+
+However, here we are importing all of the components in the route statically at the top. This means, that all these components are loaded regardless of which route is matched.
+
+To implement Code Splitting here we are going to use an excellent higher order component that does a lot of this well, it’s called [`react-loadable`](https://github.com/thejameskyle/react-loadable).
+
+first install it
+
+```js
+yarn add react-loadable
+
+or
+
+$ npm install --save react-loadable
+```
+Then use it
+
+```js
+import Loadable from 'react-loadable';
+import Home from "./components/containers/Home";
+import Loading from './components/ui/Loading';
+
+const AsyncHome = Loadable({
+  loader: () => import('./components/container/Home'),
+  loading: Loading
+});
+
+export default () =>
+  <Switch>
+    <Route path="/" exact component={AsyncHome} />
+  </Switch>;
+```
+
+And `Loading` will look like this.
+
+```js
+import React from 'react';
+
+const Loading = ({isLoading, error}) => {
+  if(isLoading) {
+    return <div>Loading...</div>;
+  } else if(error) {
+    return <div>Sorry, there was a problem loading the page.</div>;
+  } else {
+    return null;
+  }
+};
+
+export default Loading;
+```
+
+If you want to load multiple resources, you can use Loadable.Map and pass an object as a loader and specify a render method that stitches them together.
+
+```js
+Loadable.Map({
+  loader: {
+    Component: () => import('./components/container/Home'),
+    data: () => fetch('./data.json').then(res => res.json()),
+  },
+  render(loaded, props) {
+    let Component = loaded.Component.default;
+    let translations = loaded.translations;
+    return <Component {...props} data={data}/>;
+  }
+});
+```
+
+Make sure to check out the other options and features that `react-loadable` has.
